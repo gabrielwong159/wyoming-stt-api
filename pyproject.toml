@@ -5,3 +5,12 @@ description = "Wyoming server running speech-to-text with API"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "ruff>=0.12.10",
+]
+
+[tool.ruff]
+lint.extend-select = ["I"]

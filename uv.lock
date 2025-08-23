@@ -331,12 +331,22 @@ wheels = [
 ]
 
 [[package]]
+name = "wyoming"
+version = "1.7.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/f6/01ff030ae3a6c198596d9fb23600757e3d59f82ac8ffbbf0fbcda6222ecf/wyoming-1.7.2.tar.gz", hash = "sha256:3f0630cafb03e87dee857bbcafc0e4d73b3285ec99fe99e1e7a8e3cba6ee3793", size = 39616, upload-time = "2025-08-04T20:50:56.896Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/c5/12137c1ee153c7e08f1594a2374201fe6d7dc63beb57839cba239c7c2c05/wyoming-1.7.2-py3-none-any.whl", hash = "sha256:e3b55c464826e34ea20a8b8843456f962d6cc8deae27cfa5bc23f3a2693423d7", size = 41519, upload-time = "2025-08-04T20:50:55.737Z" },
+]
+
+[[package]]
 name = "wyoming-stt-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "openai" },
     { name = "pydantic-settings" },
+    { name = "wyoming" },
 ]
 
 [package.dev-dependencies]
@@ -349,6 +359,7 @@ dev = [
 requires-dist = [
     { name = "openai", specifier = ">=1.101.0" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
+    { name = "wyoming", specifier = ">=1.7.2" },
 ]
 
 [package.metadata.requires-dev]

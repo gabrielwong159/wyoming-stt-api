@@ -12,11 +12,20 @@ class OpenAIClient:
         self._client = OpenAI(api_key=api_key)
         self._model = model
 
-    def speech_to_text(self, audio_file: BinaryIO) -> str:
+    def speech_to_text(
+        self, audio_file: BinaryIO, file_extension: str | None = None
+    ) -> str:
+        # A file extension is needed for cases where audio_file does not have a
+        # name, such as when using in-memory files. The OpenAI SDK needs a name
+        # to infer the file type, so we pass in a dummy file name.
+        if file_extension is not None:
+            file = (f"dummy.{file_extension}", audio_file)
+        else:
+            file = audio_file
         start_time = time.time()
         result: str = self._client.audio.transcriptions.create(
             model=self._model,
-            file=audio_file,
+            file=file,
             language="en",
             response_format="text",
         )

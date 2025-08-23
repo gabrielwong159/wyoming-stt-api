@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Wyoming server running speech-to-text with API"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "openai>=1.101.0",
+    "pydantic-settings>=2.10.1",
+]
 
 [dependency-groups]
 dev = [
@@ -14,3 +17,6 @@ dev = [
 
 [tool.ruff]
 lint.extend-select = ["I"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]

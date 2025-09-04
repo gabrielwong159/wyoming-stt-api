@@ -18,6 +18,7 @@ class OpenAIClient:
         # A file extension is needed for cases where audio_file does not have a
         # name, such as when using in-memory files. The OpenAI SDK needs a name
         # to infer the file type, so we pass in a dummy file name.
+        file: BinaryIO | tuple[str, BinaryIO]
         if file_extension is not None:
             file = (f"dummy.{file_extension}", audio_file)
         else:

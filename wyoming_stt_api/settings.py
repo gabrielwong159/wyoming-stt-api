@@ -1,7 +1,9 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(cli_parse_args=True, cli_kebab_case=True)
+
     openai_api_key: str
     # See link for available model names:
     # https://platform.openai.com/docs/api-reference/audio/createTranscription

@@ -18,11 +18,13 @@ class WyomingEventHandler(AsyncEventHandler):
     def __init__(
         self,
         openai_client: OpenAIClient,
+        max_audio_duration_s: int,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ):
         super().__init__(reader, writer)
         self._openai_client = openai_client
+        self._max_audio_duration_s = max_audio_duration_s
         self._wave_file: wave.Wave_write | None = None
         self._buffer: BytesIO = BytesIO()
 
@@ -36,8 +38,15 @@ class WyomingEventHandler(AsyncEventHandler):
             return True
 
         if AudioStop.is_type(event.type):
+            # get the duration before file is closed
+            duration = self._audio_duration
             self._stop_audio()
-            await self._transcribe_buffer()
+            if duration <= self._max_audio_duration_s:
+                await self._transcribe_buffer()
+            else:
+                logger.error(
+                    f"Audio exceeds max duration of {self._max_audio_duration_s}s and will not be transcribed"
+                )
             return False
 
         if Transcribe.is_type(event.type):
@@ -68,9 +77,7 @@ class WyomingEventHandler(AsyncEventHandler):
         if self._wave_file is None:
             raise ValueError("Audio not started")
 
-        duration = self._wave_file.getnframes() / self._wave_file.getframerate()
-        logger.info(f"Received audio with duration {duration:.2f}s")
-
+        logger.info(f"Received audio with duration {self._audio_duration:.2f}s")
         self._wave_file.close()
         self._wave_file = None
 
@@ -107,3 +114,10 @@ class WyomingEventHandler(AsyncEventHandler):
             ],
         )
         await self.write_event(info.event())
+
+    @property
+    def _audio_duration(self) -> float:
+        if self._wave_file is None:
+            raise ValueError("Audio not started")
+
+        return self._wave_file.getnframes() / self._wave_file.getframerate()

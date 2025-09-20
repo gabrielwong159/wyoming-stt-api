@@ -11,3 +11,5 @@ class Settings(BaseSettings):
 
     server_host: str = "0.0.0.0"
     server_port: int = 10300
+
+    max_audio_duration_s: int = 10

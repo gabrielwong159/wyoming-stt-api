@@ -13,7 +13,10 @@ class OpenAIClient:
         self._model = model
 
     def speech_to_text(
-        self, audio_file: BinaryIO, file_extension: str | None = None
+        self,
+        audio_file: BinaryIO,
+        file_extension: str | None = None,
+        language: str | None = None,
     ) -> str:
         # A file extension is needed for cases where audio_file does not have a
         # name, such as when using in-memory files. The OpenAI SDK needs a name
@@ -23,13 +26,19 @@ class OpenAIClient:
             file = (f"dummy.{file_extension}", audio_file)
         else:
             file = audio_file
+
+        # Omit the language kwarg entirely rather than pass None -- the OpenAI
+        # SDK auto-detects the spoken language when it isn't given one.
+        kwargs: dict = {
+            "model": self._model,
+            "file": file,
+            "response_format": "text",
+        }
+        if language is not None:
+            kwargs["language"] = language
+
         start_time = time.time()
-        result: str = self._client.audio.transcriptions.create(
-            model=self._model,
-            file=file,
-            language="en",
-            response_format="text",
-        )
+        result: str = self._client.audio.transcriptions.create(**kwargs)
         logger.info(f"Time taken to transcribe: {time.time() - start_time:.2f}s")
         logger.info(f"Transcription: {result}")
         return result

@@ -20,5 +20,9 @@ server = AsyncTcpServer(settings.server_host, settings.server_port)
 
 def create_handler(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     return WyomingEventHandler(
-        openai_client, settings.max_audio_duration_s, reader, writer
+        openai_client,
+        settings.max_audio_duration_s,
+        settings.openai_language,
+        reader,
+        writer,
     )

@@ -13,18 +13,129 @@ from wyoming_stt_api.clients.openai import OpenAIClient
 
 logger = logging.getLogger(__name__)
 
+# Languages supported by OpenAI's Whisper-based transcription models
+# (whisper-1, gpt-4o-transcribe, gpt-4o-mini-transcribe), as ISO 639-1 codes.
+# Advertised here so Home Assistant doesn't gray out this STT entity for any
+# Assist pipeline configured in one of these languages -- the actual language
+# used per-request is controlled by the Transcribe event / openai_language
+# setting, not this list.
+SUPPORTED_LANGUAGES = [
+    "af",
+    "am",
+    "ar",
+    "as",
+    "az",
+    "ba",
+    "be",
+    "bg",
+    "bn",
+    "bo",
+    "br",
+    "bs",
+    "ca",
+    "cs",
+    "cy",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "et",
+    "eu",
+    "fa",
+    "fi",
+    "fo",
+    "fr",
+    "gl",
+    "gu",
+    "ha",
+    "haw",
+    "he",
+    "hi",
+    "hr",
+    "ht",
+    "hu",
+    "hy",
+    "id",
+    "is",
+    "it",
+    "ja",
+    "jw",
+    "ka",
+    "kk",
+    "km",
+    "kn",
+    "ko",
+    "la",
+    "lb",
+    "ln",
+    "lo",
+    "lt",
+    "lv",
+    "mg",
+    "mi",
+    "mk",
+    "ml",
+    "mn",
+    "mr",
+    "ms",
+    "mt",
+    "my",
+    "ne",
+    "nl",
+    "nn",
+    "no",
+    "oc",
+    "pa",
+    "pl",
+    "ps",
+    "pt",
+    "ro",
+    "ru",
+    "sa",
+    "sd",
+    "si",
+    "sk",
+    "sl",
+    "sn",
+    "so",
+    "sq",
+    "sr",
+    "su",
+    "sv",
+    "sw",
+    "ta",
+    "te",
+    "tg",
+    "th",
+    "tk",
+    "tl",
+    "tr",
+    "tt",
+    "uk",
+    "ur",
+    "uz",
+    "vi",
+    "yi",
+    "yo",
+    "yue",
+    "zh",
+]
+
 
 class WyomingEventHandler(AsyncEventHandler):
     def __init__(
         self,
         openai_client: OpenAIClient,
         max_audio_duration_s: int,
+        default_language: str | None,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ):
         super().__init__(reader, writer)
         self._openai_client = openai_client
         self._max_audio_duration_s = max_audio_duration_s
+        self._language = default_language
         self._wave_file: wave.Wave_write | None = None
         self._buffer: BytesIO = BytesIO()
 
@@ -50,8 +161,10 @@ class WyomingEventHandler(AsyncEventHandler):
             return False
 
         if Transcribe.is_type(event.type):
-            # TODO: this changes the transcription language, but we ignore that
-            #  and always use English.
+            transcribe = Transcribe.from_event(event)
+            # Fall back to the configured default when HA doesn't specify a
+            # language for this request.
+            self._language = transcribe.language or self._language
             return True
 
         if Describe.is_type(event.type):
@@ -82,7 +195,9 @@ class WyomingEventHandler(AsyncEventHandler):
         self._wave_file = None
 
     async def _transcribe_buffer(self):
-        text = self._openai_client.speech_to_text(self._buffer, file_extension="wav")
+        text = self._openai_client.speech_to_text(
+            self._buffer, file_extension="wav", language=self._language
+        )
         await self.write_event(Transcript(text=text).event())
 
     async def _send_info(self):
@@ -107,7 +222,7 @@ class WyomingEventHandler(AsyncEventHandler):
                                 url="https://platform.openai.com/docs/models",
                             ),
                             installed=True,
-                            languages=["en"],
+                            languages=SUPPORTED_LANGUAGES,
                         )
                     ],
                 )

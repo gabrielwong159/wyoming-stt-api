@@ -21,6 +21,15 @@ to get an API key. You will need to place your API key in a `.env` file:
 OPENAI_API_KEY=sk-proj-abc123
 ```
 
+The server transcribes in whatever language your Wyoming client (e.g. Home
+Assistant's Assist pipeline) requests. If a client doesn't specify one, it
+falls back to `OPENAI_LANGUAGE` if set, or auto-detects the spoken language
+otherwise:
+
+```
+OPENAI_LANGUAGE=en
+```
+
 ## Usage
 
 To run the server, use the following command:

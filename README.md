@@ -30,6 +30,13 @@ otherwise:
 OPENAI_LANGUAGE=en
 ```
 
+Every other field of `Settings` in `wyoming_stt_api/settings.py` can be set
+from the same file. To transcribe with a cheaper model than the default:
+
+```
+OPENAI_MODEL=gpt-4o-mini-transcribe
+```
+
 ## Usage
 
 To run the server, use the following command:

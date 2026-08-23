@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     openai_api_key: str
     # See link for available model names:
-    # https://platform.openai.com/docs/api-reference/audio/createTranscription
-    openai_model: str = "gpt-4o-mini-transcribe"
+    # https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create
+    openai_model: str = "gpt-transcribe"
     # Fallback language (ISO 639-1, e.g. "en", "de") used when the Wyoming
     # client doesn't specify one via the Transcribe event. None lets the
     # OpenAI API auto-detect the spoken language.

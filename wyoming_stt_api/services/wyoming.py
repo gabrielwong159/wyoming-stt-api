@@ -9,7 +9,7 @@ from wyoming.event import Event
 from wyoming.info import AsrModel, AsrProgram, Attribution, Describe, Info
 from wyoming.server import AsyncEventHandler
 
-from wyoming_stt_api.clients.openai import OpenAIClient
+from wyoming_stt_api.clients.base import BaseSTTClient
 
 logger = logging.getLogger(__name__)
 
@@ -126,14 +126,14 @@ SUPPORTED_LANGUAGES = [
 class WyomingEventHandler(AsyncEventHandler):
     def __init__(
         self,
-        openai_client: OpenAIClient,
+        client: BaseSTTClient,
         max_audio_duration_s: int,
         default_language: str | None,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ):
         super().__init__(reader, writer)
-        self._openai_client = openai_client
+        self._client = client
         self._max_audio_duration_s = max_audio_duration_s
         self._language = default_language
         self._wave_file: wave.Wave_write | None = None
@@ -195,7 +195,7 @@ class WyomingEventHandler(AsyncEventHandler):
         self._wave_file = None
 
     async def _transcribe_buffer(self):
-        text = self._openai_client.speech_to_text(
+        text = self._client.speech_to_text(
             self._buffer, file_extension="wav", language=self._language
         )
         await self.write_event(Transcript(text=text).event())
@@ -204,7 +204,7 @@ class WyomingEventHandler(AsyncEventHandler):
         info = Info(
             asr=[
                 AsrProgram(
-                    name="Speech-to-text API",
+                    name=f"Speech-to-text API ({self._client.provider_name})",
                     description=None,
                     version=None,
                     attribution=Attribution(
@@ -214,12 +214,12 @@ class WyomingEventHandler(AsyncEventHandler):
                     installed=True,
                     models=[
                         AsrModel(
-                            name=self._openai_client.model_name,
+                            name=self._client.model_name,
                             description=None,
                             version=None,
                             attribution=Attribution(
-                                name="OpenAI",
-                                url="https://platform.openai.com/docs/models",
+                                name=self._client.provider_name,
+                                url=self._client.provider_url,
                             ),
                             installed=True,
                             languages=SUPPORTED_LANGUAGES,

@@ -46,3 +46,11 @@ class OpenAIClient:
     @property
     def model_name(self) -> str:
         return self._model
+
+    @property
+    def provider_name(self) -> str:
+        return "OpenAI"
+
+    @property
+    def provider_url(self) -> str:
+        return "https://platform.openai.com/docs/models"
